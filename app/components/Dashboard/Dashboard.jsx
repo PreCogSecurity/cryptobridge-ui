@@ -10,6 +10,9 @@ import LoadingIndicator from "../LoadingIndicator";
 import LoginSelector from "../LoginSelector";
 import cnames from "classnames";
 import SettingsActions from "actions/SettingsActions";
+import {sanitizeNewsContent} from "utils/sanitizeHtml";
+import {isValidMarketDescriptor} from "utils/validate";
+import logger from "utils/logger";
 
 class Dashboard extends React.Component {
 
@@ -55,36 +58,38 @@ class Dashboard extends React.Component {
 
         window.addEventListener("resize", this._setDimensions, {capture: false, passive: true});
 
+        const log = logger.child("Dashboard");
         const url = 'https://api.crypto-bridge.org/api/v1/markets';
 
         fetch(url).then(reply => reply.json().then(result => {
+            // The feed is remote, unauthenticated input. Validate every entry
+            // before it reaches a React key or a MarketCard prop.
             let markets = [];
-            result.map((m) => {
-                console.log(m.id);
-                if ( (m.base === 'BRIDGE.BTC') && (m.blacklisted !== true) ) {
-                    markets.push([m.base, m.quote, m.img]);
+            (Array.isArray(result) ? result : []).forEach((m) => {
+                if (!isValidMarketDescriptor(m)) {
+                    log.warn("discarding malformed market descriptor", {market: m});
+                    return;
                 }
-                if ( (m.base === 'BRIDGE.ZNY') && (m.blacklisted !== true) ) {
-                    markets.push([m.base, m.quote, m.img]);
-                }
-                if ( (m.base === 'BRIDGE.MONA') && (m.blacklisted !== true) ) {
-                    markets.push([m.base, m.quote, m.img]);
-                }
-                if ( (m.base === 'BRIDGE.DOGE') && (m.blacklisted !== true) ) {
-                    markets.push([m.base, m.quote, m.img]);
-                }
-
+                if (m.blacklisted === true) return;
+                if (["BRIDGE.BTC", "BRIDGE.ZNY", "BRIDGE.MONA", "BRIDGE.DOGE"].indexOf(m.base) === -1) return;
+                markets.push([m.base, m.quote, m.img]);
             });
             this.setState({featuredMarkets: markets});
         })).catch(err => {
-
+            log.error("unable to load the featured markets feed", {error: err});
         });
 
         const newsUrl = 'https://crypto-bridge.org/news.json';
 
         fetch(newsUrl).then(reply => reply.json().then(news => {
-            this.setState({news: news.content});
+            // `news.content` is remote HTML that is rendered with
+            // dangerouslySetInnerHTML. Passing it through the allowlist
+            // sanitizer is what stops the news host from executing script in
+            // the wallet origin (see app/utils/sanitizeHtml.js).
+            const safe = sanitizeNewsContent(news && news.content);
+            this.setState({news: safe});
         })).catch(err => {
+            log.error("unable to load the news feed", {error: err});
         });
 
     }
@@ -134,7 +139,7 @@ class Dashboard extends React.Component {
 
     render() {
         let { linkedAccounts, myIgnoredAccounts, accountsReady, passwordAccount } = this.props;
-        let {width, showIgnored, featuredMarkets, newAssets, currentEntry} = this.state;
+        let {width, showIgnored, featuredMarkets, newAssets, currentEntry, news} = this.state;
 
         if (passwordAccount && !linkedAccounts.has(passwordAccount)) {
             linkedAccounts = linkedAccounts.add(passwordAccount);
@@ -193,7 +198,7 @@ class Dashboard extends React.Component {
                         <Translate content="exchange.news"/>
                     </div>
                     <div className="grid-block small-up-1 medium-up-3 large-up-4 no-overflow">
-                        <p dangerouslySetInnerHTML={{ __html: this.state.news }}/>
+                        {news ? <p dangerouslySetInnerHTML={{ __html: news }}/> : null}
                     </div>
 
 

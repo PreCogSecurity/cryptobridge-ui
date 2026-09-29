@@ -16,6 +16,10 @@ import { checkFeeStatusAsync, checkBalance } from "common/trxHelper";
 import { Asset } from "common/MarketClasses";
 import { ChainStore } from "bitsharesjs/es";
 import { getConversionJson } from "common/blockTradesMethods";
+import { ConversionError } from "utils/errors";
+import logger from "utils/logger";
+
+const log = logger.child("BlockTradesDepositRequest");
 
 class ButtonConversion extends React.Component {
     static propTypes = {
@@ -123,7 +127,7 @@ class ButtonConversion extends React.Component {
                 }
                 this._checkBalance();
             }).catch(err => {
-                console.error(err);
+                log.error("unable to resolve fee status", {error: err});
             });
         });
     }
@@ -162,7 +166,13 @@ class ButtonConversion extends React.Component {
         getConversionJson(this.props).then(json => {
 
             if (json.inputCoinType != input_coin_type || json.outputCoinType != output_coin_type) {
-                throw new Error("unexpected reply from initiate-trade");
+                throw new ConversionError("unexpected reply from initiate-trade", {
+                    userMessage: "The gateway returned an unexpected response. Please try again.",
+                    details: {
+                        expected: {inputCoinType: input_coin_type, outputCoinType: output_coin_type},
+                        received: {inputCoinType: json.inputCoinType, outputCoinType: json.outputCoinType}
+                    }
+                });
             }
             if (input_coin_type == json.inputCoinType && output_coin_type == json.outputCoinType && !balanceError) {
                 this.setState({conversion_memo: json.inputMemo});
@@ -175,7 +185,7 @@ class ButtonConversion extends React.Component {
                     "1.2.32567",
                     amount.getAmount(),
                     this.props.asset.get("id"),
-                    json.inputMemo ? new Buffer(json.inputMemo, "utf-8") : "",
+                    json.inputMemo ? Buffer.from(json.inputMemo, "utf-8") : "",
                     null,
                     this._getFeeID()
                 ).then( () => {
@@ -183,12 +193,16 @@ class ButtonConversion extends React.Component {
                     TransactionConfirmStore.listen(this.onTrxIncluded);
                 }).catch( e => {
                     let msg = e.message ? e.message.split( '\n' )[1] : null;
-                    console.log( "error: ", e, msg);
+                    log.error("transfer of the conversion failed", {error: e});
                     this.setState({error: msg});
                 });
             }
-        }).catch(() => {
-            this.setState({conversion_memo: null});
+        }).catch(err => {
+            // Previously the rejection handler took no argument, so the
+            // ConversionError thrown above was swallowed and the user saw the
+            // button simply do nothing.
+            log.error("conversion could not be initiated", {error: err});
+            this.setState({conversion_memo: null, error: (err && err.userMessage) || null});
         });
     }
 
@@ -766,7 +780,7 @@ class BlockTradesBridgeDepositRequest extends React.Component {
                 console.assert(json.outputCoinType == output_coin_type, "unexpected reply from initiate-trade");
                 if (json.inputCoinType != input_coin_type ||
                     json.outputCoinType != output_coin_type)
-                    throw Error("unexpected reply from initiate-trade");
+                    throw new ConversionError("unexpected reply from initiate-trade");
                 this.cacheInputAddress(json.inputCoinType, json.outputCoinType, json.inputAddress, json.inputMemo);
                 delete this.state.input_address_requests_in_progress[input_coin_type][output_coin_type];
                 if (this.state.deposit_input_coin_type == json.inputCoinType &&
@@ -832,7 +846,7 @@ class BlockTradesBridgeDepositRequest extends React.Component {
                            reply.outputCoinType == output_coin_type,
                            "unexpected reply from deposit-limits");
             if (reply.inputCoinType != input_coin_type || reply.outputCoinType != output_coin_type)
-                throw Error("unexpected reply from deposit-limits");
+                throw new ConversionError("unexpected reply from deposit-limits");
             let new_deposit_limit_record =
             {
                 timestamp: new Date(),
@@ -907,7 +921,7 @@ class BlockTradesBridgeDepositRequest extends React.Component {
                 if (reply.inputCoinType != input_coin_type ||
                     reply.outputCoinType != output_coin_type ||
                     reply.inputAmount != input_amount)
-                    throw Error("unexpected reply from estimate-output-amount");
+                    throw new ConversionError("unexpected reply from estimate-output-amount");
                 if (this.state[deposit_withdraw_or_convert + "_input_coin_type"] == input_coin_type &&
                     this.state[deposit_withdraw_or_convert + "_output_coin_type"] == output_coin_type &&
                     this.state[deposit_withdraw_or_convert + "_estimated_input_amount"] == input_amount &&

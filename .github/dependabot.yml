@@ -1,0 +1,41 @@
+version: 2
+updates:
+  # The wallet's own direct dependencies.
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "deps"
+    labels:
+      - dependencies
+    groups:
+      # Patch bumps are safe to batch; anything that changes the resolved
+      # dependency surface is split out so a reviewer can actually see it.
+      patch-updates:
+        applies-to: version-updates
+        update-types:
+          - patch
+    ignore:
+      # `foundation-apps`, `jdenticon`, `perfect-scrollbar` and
+      # `react-foundation-apps` are consumed straight from git
+      # (`git+https://...` with no tag), so Dependabot cannot resolve or
+      # version them. They are tracked for removal separately.
+      - dependency-name: foundation-apps
+      - dependency-name: jdenticon
+      - dependency-name: perfect-scrollbar
+      - dependency-name: react-foundation-apps
+
+  # The CI workflow's own actions.
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+    labels:
+      - dependencies
+      - ci

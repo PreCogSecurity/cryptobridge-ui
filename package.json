@@ -11,7 +11,7 @@
   ],
   "license": "MIT",
   "engines": {
-    "node": ">=7.x",
+    "node": ">=8.0.0 <15.0.0",
     "npm": ">=4.x",
     "yarn": ">=0.21.3"
   },
@@ -21,6 +21,11 @@
   },
   "main": "build/electron/index.js",
   "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "lint": "eslint app server.js webpack.config.js resources --ext .js,.jsx",
+    "lint:fix": "npm run lint -- --fix",
     "test:market": "cross-env NODE_ENV=test mocha --compilers js:babel-core/register ./app/test/marketTests --watch",
     "bench:market": "cross-env NODE_ENV=test babel ./lib/common/MarketClasses.js -o ./app/test/MarketClasses.js && cross-env NODE_ENV=test node --harmony ./test/marketBenchmark",
     "profile-dev": "webpack --env.dev --env.profile --profile --json > stats-dev.json",
@@ -47,9 +52,9 @@
     "package-mac": "npm run prepackage && build  -p never --mac dmg"
   },
   "jest": {
-    "scriptPreprocessor": "<rootDir>/__tests__/jest-preprocessor.js",
+    "scriptPreprocessor": "<rootDir>/app/__tests__/jest-preprocessor.js",
     "testPathDirs": [
-      "<rootDir>/__tests__"
+      "<rootDir>/app/__tests__"
     ],
     "unmockedModulePathPatterns": [
       "<rootDir>/node_modules/react",
@@ -67,10 +72,44 @@
       "jsx"
     ],
     "testPathIgnorePatterns": [
-      "/jest-preprocessor.js",
+      "/jest-preprocessor\\.js$",
+      "/stub_router_context\\.js$",
       "/node_modules/",
-      "/utils/"
-    ]
+      "/dist/",
+      "/build/"
+    ],
+    "modulePathIgnorePatterns": [
+      "<rootDir>/docs/_build/"
+    ],
+    "moduleNameMapper": {
+      "^common/(.*)$": "<rootDir>/app/lib/common/$1",
+      "^actions/(.*)$": "<rootDir>/app/actions/$1",
+      "^stores/(.*)$": "<rootDir>/app/stores/$1",
+      "^api/(.*)$": "<rootDir>/app/api/$1",
+      "^components/(.*)$": "<rootDir>/app/components/$1",
+      "^utils/(.*)$": "<rootDir>/app/utils/$1"
+    },
+    "collectCoverageFrom": [
+      "app/api/**/*.js",
+      "app/lib/common/**/*.js",
+      "app/utils/**/*.js"
+    ],
+    "coverageReporters": [
+      "text-summary",
+      "lcov"
+    ],
+    "coveragePathIgnorePatterns": [
+      "/node_modules/",
+      "/__tests__/"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "branches": 40,
+        "functions": 40,
+        "lines": 50,
+        "statements": 50
+      }
+    }
   },
   "browsersList": "electron 1.7",
   "build": {

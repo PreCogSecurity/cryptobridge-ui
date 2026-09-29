@@ -9,10 +9,7 @@
     ],
     "env": {
         "test": {
-            "presets": ["es2015", "stage-0","react"],
-            "plugins": [
-                [ "babel-plugin-webpack-alias", { "config": "./conf/webpack.config.js" } ]
-            ]
+            "presets": ["es2015", "stage-0", "react"]
         }
     }
 }

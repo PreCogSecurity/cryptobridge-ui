@@ -5,6 +5,16 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width"/>
     <meta name="format-detection" content="telephone=no">
+    <!--
+        Content-Security-Policy for the hosted web wallet.
+
+        'unsafe-inline' is required for the analytics bootstrap snippet below.
+        Everything else is pinned to the application's own origin: the wallet
+        must not be able to load and execute script from an arbitrary host.
+        `frame-ancestors 'none'` blocks clickjacking of the sign-transaction
+        flow, and `object-src 'none'` closes the plugin-content vector.
+    -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https: wss: ws://127.0.0.1:8090 wss://127.0.0.1:8090; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'">
     <!--<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>-->
     <title>CryptoBridge decentralized exchange</title>
     <link rel="icon" type="image/x-icon" href="favicon.ico">

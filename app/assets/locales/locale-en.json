@@ -1277,7 +1277,12 @@
     "withdraw": {
       "amount": "Amount to Withdraw",
       "address": "Withdraw to Address",
-      "submit": "Withdraw"
+      "submit": "Withdraw",
+      "error_amount_invalid": "Enter a valid withdrawal amount",
+      "error_amount_positive": "Withdrawal amount must be greater than zero",
+      "error_amount_precision": "Withdrawal amount has more decimal places than this asset supports",
+      "error_address_invalid": "Enter a valid destination address",
+      "error_memo_invalid": "The withdrawal reference is invalid"
     },
     "deposit": {
       "amount": "Amount to Deposit",
