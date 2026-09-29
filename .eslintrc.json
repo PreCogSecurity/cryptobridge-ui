@@ -1,0 +1,61 @@
+{
+    "root": true,
+    "plugins": [
+        "react",
+        "json"
+    ],
+    "extends": ["plugin:react/recommended"],
+    "parser": "babel-eslint",
+    "env": {
+        "browser": true,
+        "node": true,
+        "es6": true,
+        "jest": true
+    },
+    "parserOptions": {
+        "ecmaVersion": 2018,
+        "sourceType": "module",
+        "ecmaFeatures": {
+            "blockBindings": true,
+            "forOf": true,
+            "jsx": true,
+            "experimentalObjectRestSpread": true
+        }
+    },
+    "globals": {
+        "__DEV__": false,
+        "__TESTNET__": false,
+        "__ELECTRON__": false,
+        "__HASH_HISTORY__": false,
+        "__BASE_URL__": false,
+        "__UI_API__": false,
+        "__DEPRECATED__": false,
+        "APP_VERSION": false,
+        "$g": false
+    },
+    "rules": {
+        "no-unused-vars": ["error", { "vars": "all", "args": "after-used" }],
+        "comma-dangle": 0,
+        "indent": ["error", 4, {"SwitchCase": 1}],
+        "quotes": [2, "double", "avoid-escape"],
+        "semi": [2, "always"],
+        "camelcase": [0],
+        "no-console": [0],
+        "object-curly-spacing": [0],
+        "react/prop-types": [0],
+
+        "eqeqeq": [2, "allow-null"],
+        "no-var": "off",
+        "prefer-const": "off",
+        "no-empty": [2, {"allowEmptyCatch": false}],
+        "no-throw-literal": 2,
+        "no-implicit-globals": 2,
+        "no-undef": 2
+    },
+    "overrides": [
+        {
+            "files": ["app/__tests__/**/*.js", "app/__tests__/**/*.jsx"],
+            "env": {"jest": true}
+        }
+    ]
+}

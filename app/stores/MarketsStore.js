@@ -7,6 +7,12 @@ import {ChainStore} from "bitsharesjs/es";
 import utils from "common/utils";
 import {LimitOrder, CallOrder, FeedPrice, SettleOrder, Asset,
     didOrdersChange, Price} from "common/MarketClasses";
+import logger from "utils/logger";
+
+// A single scoped logger for the store: market subscription failures were
+// previously reported with bare console.error calls that carried no market
+// identifier, no level and no redaction.
+const log = logger.child("MarketsStore");
 
 // import {
 //     SettleOrder
@@ -286,7 +292,7 @@ class MarketsStore {
                         );
                     }
                 } catch(err) {
-                    console.error("Unable to construct calls array, invalid feed price or prediction market?");
+                    log.error("Unable to construct calls array, invalid feed price or prediction market", {error: err});
                 }
             });
 
@@ -426,7 +432,7 @@ class MarketsStore {
                         this._depthChart();
                     }
                 } catch(err) {
-                    console.error("Unable to construct calls array, invalid feed price or prediction market?");
+                    log.error("Unable to construct calls array, invalid feed price or prediction market", {error: err});
                 }
 
             }
@@ -477,7 +483,7 @@ class MarketsStore {
                         );
                     }
                 } catch(err) {
-                    console.error("Unable to construct calls array, invalid feed price or prediction market?");
+                    log.error("Unable to construct calls array, invalid feed price or prediction market", {error: err});
                 }
             });
 
@@ -541,7 +547,7 @@ class MarketsStore {
 
             return feedPrice;
         } catch(err) {
-            console.error(this.activeMarket, "does not have a properly configured feed price");
+            log.error("active market does not have a properly configured feed price", {market: this.activeMarket, error: err});
             return null;
         }
 

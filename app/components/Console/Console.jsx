@@ -4,7 +4,24 @@ import ApplicationApi from "api/ApplicationApi";
 import WalletApi from "api/WalletApi";
 import DebugApi from "api/DebugApi";
 
+/**
+ * SECURITY: `evalInContext` executes arbitrary JavaScript with direct access to
+ * the chain API and the unlocked wallet. That is a deliberate developer
+ * feature, so it is compiled out of production bundles: a remote-content XSS or
+ * a compromised third-party script must never be able to reach this sink.
+ * Keep the component out of the production router as well.
+ */
+function evalInContextEnabled() {
+    return typeof process !== "undefined" &&
+        process.env &&
+        process.env.NODE_ENV !== "production";
+}
+
 function evalInContext(js) {
+
+    if ( ! evalInContextEnabled() ) {
+        throw new Error("The console is disabled in production builds.");
+    }
 
     var db = Apis.instance().db_api(),
         net = Apis.instance().network_api(),

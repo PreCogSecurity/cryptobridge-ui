@@ -1,1 +1,12 @@
 bloom_filter
+node_modules
+dist
+build
+docs/_build
+stats*.json
+app/assets/locales
+app/lib/chain/serializer_config.coffee
+app/lib/common/base58.coffee
+app/lib/common/qr-image.coffee
+app/lib/common/secureRandom.coffee
+app/test

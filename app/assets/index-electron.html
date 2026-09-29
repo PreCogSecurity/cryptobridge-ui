@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width"/>
     <meta name="format-detection" content="telephone=no">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https: wss: ws://127.0.0.1:8090 wss://127.0.0.1:8090; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'">
     <title>CryptoBridge decentralized exchange</title>
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <link rel="stylesheet" href="app.css">
@@ -21,23 +22,18 @@
         }
     </style>
 
-    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-    'https://www.googletagmanager.com/gtm.js?id=%27+i+dl;f.parentNode.insertBefore(j,f);
-    })(window,document,'script','dataLayer','GTM-MXB4V99');</script>
+    <!--
+        SECURITY: Google Analytics and Google Tag Manager are deliberately NOT
+        loaded in the desktop (Electron) build.
 
-
-<!-- Global site tag (gtag.js) - Google Analytics -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=UA-113295938-1"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'UA-113295938-2');
-</script>
-
+        This renderer has Node integration (see resources/index.js), so any
+        third-party script running here can call `require('child_process')`.
+        Loading a remotely-hosted, container-controlled script into a wallet
+        that holds private keys turns a Tag Manager account compromise into a
+        total loss of funds, and leaks users' balances and addresses to Google.
+        The application code reads neither `gtag` nor `dataLayer`, so removing
+        them is behaviour-preserving.
+    -->
 
     <script>
         var ref = encodeURIComponent(document.referrer);
@@ -58,6 +54,5 @@
     <main id="content">
         <h1 class="centerDiv" style="">Loading...</h1>
     </main>
-</script>
 </body>
 </html>

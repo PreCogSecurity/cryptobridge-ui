@@ -4,13 +4,65 @@ on:
     branches: [main, master]
   pull_request:
     branches: [main, master]
+permissions:
+  contents: read
 jobs:
   test:
+    name: Test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          cache: 'npm'
+          node-version: 14
+          cache: npm
       - run: npm ci
-      - run: npm test
+      - name: Run unit tests
+        run: npm test
+      - name: Enforce coverage thresholds
+        run: npm run test:coverage
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage/
+          if-no-files-found: ignore
+          retention-days: 7
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 14
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+
+  dependency-audit:
+    name: Dependency audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 14
+          cache: npm
+      - run: npm ci
+      # `--omit=dev` keeps the gate on the dependency tree that actually ships
+      # in the wallet bundle. Promote to a full audit (including dev deps) once
+      # the legacy webpack 3 / babel 6 toolchain has been retired.
+      - name: Audit production dependencies
+        run: npm audit --audit-level=high --omit=dev
+
+  secret-scan:
+    name: Secret scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
