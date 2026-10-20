@@ -284,10 +284,10 @@ class ImportKeys extends Component {
 
                 if( "master_key_record_type" == element.type) {
                     if( ! element.data)
-                        throw file.name + " invalid master_key_record record";
+                        throw file_name + " invalid master_key_record record";
 
                     if( ! element.data.checksum)
-                        throw file.name + " is missing master_key_record checksum";
+                        throw file_name + " is missing master_key_record checksum";
 
                     password_checksum = element.data.checksum;
                 }
@@ -297,10 +297,13 @@ class ImportKeys extends Component {
                 throw "Please use a BTS 1.0 wallet_export_keys file instead";
 
             if( ! password_checksum)
-                throw file.name + " is missing password_checksum";
+                throw file_name + " is missing password_checksum";
 
-            if( ! enckeys.length)
-                throw file.name + " does not contain any private keys";
+            // `enckeys` is block-scoped to the loop above, so the original
+            // `! enckeys.length` threw a ReferenceError instead of reporting the
+            // real problem. Check the collected map instead.
+            if( ! Object.keys(address_to_enckeys).length)
+                throw file_name + " does not contain any private keys";
 
         } catch(e) { throw e.message || e; }
 

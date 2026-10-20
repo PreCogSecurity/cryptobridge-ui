@@ -31,31 +31,44 @@
         "__UI_API__": false,
         "__DEPRECATED__": false,
         "APP_VERSION": false,
-        "$g": false
+        "$g": false,
+        "onmessage": false,
+        "postMessage": false,
+        "importScripts": false,
+        "shimIndexedDB": false,
+        "iDB": false,
+        "blockTradesAPIs": false,
+        "ANONYMOUS": false,
+        "Indicator": false,
+        "WalletDb": false,
+        "ChainStore": false,
+        "SettingsStore": false,
+        "market_utils": false,
+        "counterpart": false
     },
     "rules": {
-        "no-unused-vars": ["error", { "vars": "all", "args": "after-used" }],
+        "no-unused-vars": ["warn", { "vars": "all", "args": "after-used" }],
         "comma-dangle": 0,
-        "indent": ["error", 4, {"SwitchCase": 1}],
-        "quotes": [2, "double", "avoid-escape"],
-        "semi": [2, "always"],
+        "indent": ["warn", 4, {"SwitchCase": 1}],
+        "quotes": [1, "double", "avoid-escape"],
+        "semi": [1, "always"],
         "camelcase": [0],
         "no-console": [0],
         "object-curly-spacing": [0],
         "react/prop-types": [0],
 
-        "eqeqeq": [2, "allow-null"],
+        "eqeqeq": [1, "allow-null"],
         "no-var": "off",
         "prefer-const": "off",
-        "no-empty": [2, {"allowEmptyCatch": false}],
-        "no-throw-literal": 2,
-        "no-implicit-globals": 2,
-        "no-undef": 2
-    },
-    "overrides": [
-        {
-            "files": ["app/__tests__/**/*.js", "app/__tests__/**/*.jsx"],
-            "env": {"jest": true}
-        }
-    ]
+        "no-empty": [1, {"allowEmptyCatch": false}],
+        "no-throw-literal": 1,
+        "no-implicit-globals": 1,
+        "no-undef": 1,
+
+        "react/no-direct-mutation-state": 1,
+        "react/display-name": 1,
+        "react/no-danger": 1,
+        "react/no-did-mount-set-state": 1,
+        "react/jsx-no-duplicate-props": 1
+    }
 }

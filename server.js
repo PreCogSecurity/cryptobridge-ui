@@ -30,7 +30,11 @@ var app = express();
 var compiler = webpack(config);
 
 compiler.apply(new ProgressPlugin(function (percentage, msg) {
-    process.stdout.write((percentage * 100).toFixed(2) + "% " + msg + "                 \033[0G");
+    // `\u001b` is the ESC control character. The previous `\033` octal escape
+    // is a syntax error in strict mode (ES modules and babel-parsed files), so
+    // the file could not be parsed at all -- `npm run lint` failed on it before
+    // it ever checked a rule.
+    process.stdout.write((percentage * 100).toFixed(2) + "% " + msg + "                 \u001b[0G");
 }));
 
 app.disable("x-powered-by");

@@ -26,6 +26,7 @@
     "test:coverage": "jest --coverage",
     "lint": "eslint app server.js webpack.config.js resources --ext .js,.jsx",
     "lint:fix": "npm run lint -- --fix",
+    "lint:strict": "eslint app/utils app/__tests__ --ext .js,.jsx --max-warnings 0",
     "test:market": "cross-env NODE_ENV=test mocha --compilers js:babel-core/register ./app/test/marketTests --watch",
     "bench:market": "cross-env NODE_ENV=test babel ./lib/common/MarketClasses.js -o ./app/test/MarketClasses.js && cross-env NODE_ENV=test node --harmony ./test/marketBenchmark",
     "profile-dev": "webpack --env.dev --env.profile --profile --json > stats-dev.json",
@@ -52,10 +53,16 @@
     "package-mac": "npm run prepackage && build  -p never --mac dmg"
   },
   "jest": {
-    "scriptPreprocessor": "<rootDir>/app/__tests__/jest-preprocessor.js",
+    "transform": {
+      ".*": "<rootDir>/app/__tests__/jest-preprocessor.js"
+    },
+    "setupFiles": [
+      "<rootDir>/app/__tests__/setup.js"
+    ],
     "testPathDirs": [
       "<rootDir>/app/__tests__"
     ],
+    "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.jsx?$",
     "unmockedModulePathPatterns": [
       "<rootDir>/node_modules/react",
       "<rootDir>/node_modules/tcomb",
@@ -67,12 +74,9 @@
       "json",
       "coffee"
     ],
-    "testFileExtensions": [
-      "js",
-      "jsx"
-    ],
     "testPathIgnorePatterns": [
       "/jest-preprocessor\\.js$",
+      "/setup\\.js$",
       "/stub_router_context\\.js$",
       "/node_modules/",
       "/dist/",

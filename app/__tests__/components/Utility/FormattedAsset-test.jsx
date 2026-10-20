@@ -5,6 +5,14 @@ import ReactDOMServer from "react-dom/server";
 // two chain-state-connected children. Server rendering keeps the assertions on
 // the component's own logic (precision maths, visibility flags, percentage
 // formatting) while stubbing everything that needs a live chain.
+//
+// NOTE ON MOCK PATHS: FormattedAsset imports its siblings with *relative*
+// specifiers (`./BindToChainState`, `./HelpContent`, ...). Jest resolves a
+// `jest.mock()` path relative to the test file, so an alias such as
+// `components/Utility/BindToChainState` does not intercept the relative import
+// and the real module loads. Each sibling is therefore mocked by the path that
+// resolves from this file. Without this the real BindToChainState subscribes to
+// a live ChainStore and the real HelpContent calls webpack's `require.context`.
 
 jest.mock("bitsharesjs/es", () => ({
     ChainStore: {
@@ -17,26 +25,32 @@ jest.mock("bitsharesjs/es", () => ({
     }
 }));
 
-jest.mock("components/Utility/BindToChainState", () => (Component) => Component);
+jest.mock("../../../components/Utility/BindToChainState", () => (Component) => Component);
 
-jest.mock("components/Utility/ChainTypes", () => ({
+jest.mock("../../../components/Utility/ChainTypes", () => ({
     ChainAsset: {isRequired: false},
     ChainAccount: {isRequired: false}
 }));
 
-jest.mock("components/Utility/AssetName", () => (props) =>
-    React.createElement("span", {className: "asset-name"}, props.name));
+jest.mock("../../../components/Utility/AssetName", () => function AssetName(props) {
+    return require("react").createElement("span", {className: "asset-name"}, props.name);
+});
 
-jest.mock("components/Utility/HelpContent", () => () =>
-    React.createElement("div", {className: "help-content"}));
+jest.mock("../../../components/Utility/HelpContent", () => function HelpContent() {
+    return require("react").createElement("div", {className: "help-content"});
+});
 
-jest.mock("react-popover", () => (props) => React.createElement("div", null, props.children));
+jest.mock("react-popover", () => function Popover(props) {
+    return require("react").createElement("div", null, props.children);
+});
 
 // A faithful stand-in for react-intl's FormattedNumber: it applies the
 // requested fixed precision, which is the behaviour under test.
 jest.mock("react-intl", () => ({
-    FormattedNumber: (props) => React.createElement("span", {className: "number"},
-        Number(props.value).toFixed(props.minimumFractionDigits))
+    FormattedNumber: function FormattedNumber(props) {
+        return require("react").createElement("span", {className: "number"},
+            Number(props.value).toFixed(props.minimumFractionDigits));
+    }
 }));
 
 jest.mock("common/asset_utils", () => ({

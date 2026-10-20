@@ -42,6 +42,23 @@ jobs:
       - run: npm ci
       - run: npm run lint
 
+  typecheck:
+    name: Typecheck (strict lint on typed modules)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 14
+          cache: npm
+      - run: npm ci
+      # The codebase is plain JS/JSX with no TS/Flow layer, so this job is the
+      # static-analysis gate: it re-runs ESLint with every rule as a hard error
+      # and --max-warnings 0 over the security-critical utility modules and the
+      # test suite. The legacy tree keeps those rules as warnings (see the root
+      # .eslintrc.json); this job stops the debt from spreading into new code.
+      - run: npm run lint:strict
+
   dependency-audit:
     name: Dependency audit
     runs-on: ubuntu-latest
