@@ -40,6 +40,8 @@ Copy `.env.example` to `.env` and adjust the endpoints you need. Nothing in that
 cp .env.example .env
 ```
 
+The variables that matter for a first run are `HOST` and `PORT` (the dev server binds to `127.0.0.1:8080` by default) and `NODE_ENV`. `NODE_ENV=development` is what `npm start` uses and enables hot reload and eval source maps; the `build*` scripts set `NODE_ENV=production` themselves, so you only need to set it by hand when invoking webpack directly. The remaining entries in `.env.example` are optional endpoint overrides for the chain and gateway APIs.
+
 ## Running the dev server&emsp;
 
 The dev server uses Express in combination with Webpack.
@@ -77,6 +79,20 @@ npm run lint:fix
 
 Linting also runs as a required CI job.
 
+The 2017-era components and stores predate the current style guide, so the
+purely stylistic rules (`indent`, `semi`, `quotes`) and the legacy-only
+correctness rules run as **warnings** across that tree — visible, but not
+blocking, until the debt is paid down file by file. The security-critical
+modules (`app/utils/`) and the test suite enforce the full rule set as **hard
+errors** through nested `.eslintrc.json` files, and a separate `typecheck` CI
+job runs them with `--max-warnings 0`:
+
+```
+npm run lint:strict
+```
+
+New code should be added under the strict gate wherever possible.
+
 ## Supported Node versions&emsp;
 
 **Node 14** is the supported version (`.nvmrc`, `package.json` `engines`, and CI all agree).
@@ -109,6 +125,9 @@ This application holds private keys and signs transactions in the browser. Treat
 | Amount / address / memo validation on the withdraw path | `app/utils/validate.js`, `app/components/DepositWithdraw/WithdrawModal.jsx` |
 | Remote market feed validated before use | `app/components/Dashboard/Dashboard.jsx` |
 | `npm audit` gate and secret scanning in CI | `.github/workflows/ci.yml` |
+
+Vulnerability reports should go through the private disclosure path in
+[SECURITY.md](SECURITY.md), never a public issue.
 
 Rules of thumb when contributing:
 

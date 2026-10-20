@@ -27,11 +27,18 @@ export class AppError extends Error {
         const opts = options || {};
         super(message || code);
 
-        // `extends Error` loses the prototype when the file is down-compiled to
-        // ES5 by babel, so restore it explicitly for `instanceof` to work.
-        Object.setPrototypeOf(this, new.target.prototype);
+        // `extends Error` is broken under babel 6: `super(...)` calls
+        // `Error.call(this)`, which returns a *fresh* Error object, and babel's
+        // `_possibleConstructorReturn` then swaps `this` for it. The result is
+        // that `this` is a plain Error with `Error.prototype`, so `instanceof`
+        // against the subclass fails and `this.constructor.name` is "Error".
+        //
+        // `new.target` would be the textbook fix, but babel 6's es2015 preset
+        // does not transform it and leaves it `undefined` at runtime. So each
+        // class restores its own prototype explicitly via `_restorePrototype`,
+        // which also repairs `name` from the now-correct constructor.
+        _restorePrototype(this, AppError);
 
-        this.name = this.constructor.name;
         this.code = code || ERROR_CODES.UNKNOWN;
         this.userMessage = opts.userMessage || "An unexpected error occurred.";
         this.details = opts.details || null;
@@ -55,27 +62,41 @@ export class AppError extends Error {
     }
 }
 
+/**
+ * Point an instance at the prototype of the class actually being constructed
+ * and refresh `name` from it. See the note in `AppError` for why this cannot be
+ * done with `new.target` on this toolchain.
+ */
+function _restorePrototype(instance, klass) {
+    Object.setPrototypeOf(instance, klass.prototype);
+    instance.name = klass.name;
+}
+
 export class ValidationError extends AppError {
     constructor(message, options) {
         super(ERROR_CODES.VALIDATION, message, options);
+        _restorePrototype(this, ValidationError);
     }
 }
 
 export class NetworkError extends AppError {
     constructor(message, options) {
         super(ERROR_CODES.NETWORK, message, Object.assign({retryable: true}, options));
+        _restorePrototype(this, NetworkError);
     }
 }
 
 export class ConversionError extends AppError {
     constructor(message, options) {
         super(ERROR_CODES.CONVERSION, message, options);
+        _restorePrototype(this, ConversionError);
     }
 }
 
 export class WithdrawalError extends AppError {
     constructor(message, options) {
         super(ERROR_CODES.WITHDRAWAL, message, options);
+        _restorePrototype(this, WithdrawalError);
     }
 }
 

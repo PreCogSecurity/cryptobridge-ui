@@ -1,0 +1,14 @@
+{
+    "//": "Strict gate for the security-critical utility modules. These files are small, modern and fully unit-tested, so they must satisfy the full rule set as hard errors. The legacy tree keeps these rules as warnings (see the root .eslintrc.json) until it is paid down file-by-file.",
+    "rules": {
+        "no-unused-vars": ["error", { "vars": "all", "args": "after-used" }],
+        "indent": ["error", 4, {"SwitchCase": 1}],
+        "quotes": [2, "double", "avoid-escape"],
+        "semi": [2, "always"],
+        "eqeqeq": [2, "allow-null"],
+        "no-empty": [2, {"allowEmptyCatch": false}],
+        "no-throw-literal": 2,
+        "no-implicit-globals": 2,
+        "no-undef": 2
+    }
+}

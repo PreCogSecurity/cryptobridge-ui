@@ -28,3 +28,4 @@ app/test/MarketClasses.js
 
 # Jest coverage output
 coverage/
+node_modules/

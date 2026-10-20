@@ -137,8 +137,10 @@ describe("input validation", function() {
         });
 
         it("rejects zero-width characters used to disguise an address", function() {
-            // U+200B ZERO WIDTH SPACE.
-            expect(isValidWithdrawalAddress("1BvBMSEY" + "" + "stWetqTFn5Au4m4GFg7xJaNVN2")).toBe(false);
+            // U+200B ZERO WIDTH SPACE, written as an escape so the literal
+            // character can never be silently stripped by an editor or a
+            // copy/paste round-trip (which is exactly what happened before).
+            expect(isValidWithdrawalAddress("1BvBMSEY" + "\u200b" + "stWetqTFn5Au4m4GFg7xJaNVN2")).toBe(false);
         });
 
         it("enforces the length ceiling", function() {

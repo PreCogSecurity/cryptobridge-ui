@@ -41,6 +41,33 @@ export const MAX_MEMO_LENGTH = 1024;
 export const MAX_ADDRESS_LENGTH = 200;
 
 /**
+ * Reduce a user-entered amount to a plain `[+-]?digits[.digits]` string, or
+ * null when it is not a number at all.
+ *
+ * Comma handling is deliberately locale-aware, because guessing wrong here
+ * moves money by a factor of 1000:
+ *   - a dot is present  -> commas are thousands separators ("1,234.5" -> 1234.5)
+ *   - no dot, one comma -> the comma is a decimal separator ("1,5" -> 1.5)
+ *   - no dot, many commas -> thousands separators ("1,234,567" -> 1234567)
+ * Only *outer* whitespace is forgiven: "1 2" must not silently become 12.
+ *
+ * @returns {string|null}
+ */
+function normalizeNumericString(value) {
+    let raw = String(value).trim();
+    if (raw === "") return null;
+
+    const commaCount = (raw.match(/,/g) || []).length;
+    if (raw.indexOf(".") !== -1 || commaCount !== 1) {
+        raw = raw.replace(/,/g, "");
+    } else {
+        raw = raw.replace(",", ".");
+    }
+
+    return /^[+-]?(\d+\.?\d*|\.\d+)$/.test(raw) ? raw : null;
+}
+
+/**
  * Parse a user-entered amount into a finite number.
  * Accepts thousands separators and surrounding whitespace; rejects anything
  * else -- including scientific notation, multiple decimal points, `Infinity`
@@ -53,9 +80,8 @@ export function normalizeAmount(value) {
     if (value === null || value === undefined) return null;
     if (typeof value === "number") return isFinite(value) ? value : null;
 
-    // Only *outer* whitespace is forgiven: "1 2" must not silently become 12.
-    const raw = String(value).trim().replace(/,/g, "");
-    if (raw === "" || !/^[+-]?(\d+\.?\d*|\.\d+)$/.test(raw)) return null;
+    const raw = normalizeNumericString(value);
+    if (raw === null) return null;
 
     const parsed = Number(raw);
     return isFinite(parsed) ? parsed : null;
@@ -71,8 +97,10 @@ export function isValidAmount(value, precision) {
     if (amount <= 0) return false;
 
     if (typeof precision === "number" && precision >= 0) {
-        const raw = String(value).trim().replace(/,/g, "");
-        const dot = raw.indexOf(".");
+        // Measure decimals on the *normalised* string so the precision check
+        // and the parsed value can never disagree about what was typed.
+        const raw = normalizeNumericString(value);
+        const dot = raw === null ? -1 : raw.indexOf(".");
         if (dot !== -1 && raw.length - dot - 1 > precision) return false;
     }
     return true;

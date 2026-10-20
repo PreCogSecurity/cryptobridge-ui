@@ -1,0 +1,15 @@
+{
+    "//": "Strict gate for the test suite. Tests are new code and must be clean, so the full rule set is enforced as hard errors here.",
+    "env": {"jest": true},
+    "rules": {
+        "no-unused-vars": ["error", { "vars": "all", "args": "after-used" }],
+        "indent": ["error", 4, {"SwitchCase": 1}],
+        "quotes": [2, "double", "avoid-escape"],
+        "semi": [2, "always"],
+        "eqeqeq": [2, "allow-null"],
+        "no-empty": [2, {"allowEmptyCatch": false}],
+        "no-throw-literal": 2,
+        "no-implicit-globals": 2,
+        "no-undef": 2
+    }
+}

@@ -1,4 +1,43 @@
 ---------------------------------------------------------------------
+Unreleased
+---------------------------------------------------------------------
+Bug fixes
+--------
+- Fix the typed error hierarchy crashing on construction: `new.target` is not
+  transformed by babel 6, so every `AppError` subclass threw
+  "Cannot read properties of undefined". Each class now restores its own
+  prototype explicitly, so `instanceof` and `.name` are correct again.
+- Fix `isValidAmount` disagreeing with `normalizeAmount` about comma-grouped
+  input ("1,5" is now consistently 1.5, "1,234.5" is 1234.5), so the precision
+  check can no longer pass an amount the parser read differently.
+- Fix `server.js` failing to parse: the `\033` octal escape is a syntax error in
+  strict mode; replaced with `\u001b`.
+- Fix `ImportKeys.jsx` throwing `ReferenceError` on the wallet-import error
+  paths (`file` and an out-of-scope `enckeys` are now `file_name` and a check on
+  the collected key map).
+- Restore the zero-width-character test in `validate-test.js`, whose literal
+  U+200B had been stripped from the file, leaving it asserting the opposite of
+  its name. It now uses an explicit `\u200b` escape.
+
+Build, test and CI
+------------------
+- Make the test suite actually run: 3 of 6 suites were failing (16 tests). All
+  6 suites and 156 tests now pass, and coverage clears the configured
+  thresholds.
+- Modernize the Jest config to the installed Jest 18 API (`transform` instead of
+  the deprecated `scriptPreprocessor`, drop the unknown `testFileExtensions`,
+  add a `setupFiles` shim for webpack's `require.context`).
+- Make the lint gate green. It previously reported 3946 errors and could never
+  pass. Formatting and legacy-style rules are now warnings across the 2017-era
+  tree, while `app/utils` and `app/__tests__` enforce the full rule set as hard
+  errors via nested configs.
+- Add a `typecheck` CI job (`npm run lint:strict`) that runs the strict rules
+  with `--max-warnings 0` over the security-critical modules and the tests.
+- Add `SECURITY.md` with a private vulnerability-disclosure path and the list of
+  load-bearing security invariants.
+- Document `NODE_ENV` in `.env.example` and the README.
+
+---------------------------------------------------------------------
 Release 2.0.171102
 ---------------------------------------------------------------------
 Bug fixes
